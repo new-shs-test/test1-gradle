@@ -1,0 +1,31 @@
+name: shs-action
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: "project"
+
+      - name: Run SHS Analyser
+        id: shs-analyser
+        uses: isel-leic-shs/shs-action@main
+        env:
+          db_user: "${{secrets.SHS_DB_USER}}"
+          db_password: "${{secrets.SHS_DB_PASSWORD}}"
+          shs_token: "${{secrets.SHS_API_TOKEN}}"
+
+      - name: Print github information
+        run: cat "${{ steps.shs-analyser.outputs.repository_info}}"
+
+      - name: Upload the Dependency-Check report
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency check-report
+          path: "${{steps.shs-analyser.outputs.dependency_check_report}}"

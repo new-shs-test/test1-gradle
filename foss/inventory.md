@@ -1,6 +1,6 @@
 # Foss Inventory 
 
-## Project new-shs-test@test1-gradle and release taga
+## Project new-shs-test@test1-gradle and release tag2
 
 ## Created on: Sun Jul 21 18:56:57 WEST 2024 
 

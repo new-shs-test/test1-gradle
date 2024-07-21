@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.isel.gomokuApi.domain.gameLogic.GameLogicTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-11-07T09:57:38" hostname="MARSUL" time="0.046">
+  <properties/>
+  <testcase name="draw check()" classname="com.isel.gomokuApi.domain.gameLogic.GameLogicTest" time="0.029"/>
+  <testcase name="diagonal 1 win check()" classname="com.isel.gomokuApi.domain.gameLogic.GameLogicTest" time="0.008"/>
+  <testcase name="vertical win check()" classname="com.isel.gomokuApi.domain.gameLogic.GameLogicTest" time="0.001"/>
+  <testcase name="horizontal win check()" classname="com.isel.gomokuApi.domain.gameLogic.GameLogicTest" time="0.002"/>
+  <testcase name="diagonal 2 win check()" classname="com.isel.gomokuApi.domain.gameLogic.GameLogicTest" time="0.001"/>
+  <system-out><![CDATA[225
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

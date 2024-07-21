@@ -1,0 +1,618 @@
+openapi: 3.0.3
+info:
+  title: GomokuApi
+  description: Ensures all the game rules are followed, as well as storing the game states and final outcomes.
+  version: 0.1.1
+servers:
+  - url: 'https://localhost:8080'
+
+tags:
+  - name: System
+  - name: GlobalStats
+  - name: UserManagement
+  - name: Game
+
+paths:
+  /api/sytemInfo:
+    get:
+      tags:
+        - System
+      summary: System authors and the system version.
+      description:
+        Here you can obtain information about the API, it contains the developers name´s and contacts and the 
+        version of the api.
+      responses:
+        200:
+          description: System info.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemInfo'
+  /api/statistics:
+    get:
+      tags:
+        - GlobalStats
+      summary: Global statistics from all the games played through the API.
+      description:
+        Here the client obtains general statistics. General in the sense of agglomerating some possibly
+        interesting aspects about the game. The results can be total number of hours spent by users playing
+        the game, the number of games completed to date and the number of victories.
+      responses:
+        200:
+          description: Games stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalStats'
+
+  /api/statistics/ranking/{page}:
+    get:
+      tags:
+        - GlobalStats
+      summary: Users rankings such as ranking by points, by time played, etc...
+      description:
+        "Here the client obtains the top 10 players in each category. The categories are: best players, top victories,
+        most games, most time played and most defeats."
+      parameters :
+        - name : page
+          in : path
+          description : Page of ranking to present, each page has 10 users for each different ranks.
+          required : true
+          schema :
+            type : integer
+      responses:
+        200:
+          description: Top 10 from each category.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rankings'
+  /api/user/register:
+    post:
+      tags:
+        - UserManagement
+      summary: Registers a new User.
+      requestBody:
+        description: Register a new user to play.
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - nickname
+                - email
+                - password
+              type: object
+              properties:
+                nickname:
+                  type: string
+                  example : "Joao123"
+                  description: User nickname most be unique and mandatory.
+                email:
+                  type: string
+                  example : "jaoa123@gmail.com"
+                  description: User email most be unique and mandatory.
+                password:
+                  type: string
+                  example : "123456"
+                  description:
+                    User secure password must have a length greater than 6, have an uppercase letter, have a lowercase letter
+                    and have a number.
+
+      responses:
+        201:
+          description: User created.
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/UserCreated'
+  /api/user/login:
+    post:
+      tags:
+        - UserManagement
+      summary: Requests a session token for a valid user.
+      requestBody:
+        description: Login data.
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - nickname
+                - password
+              type: object
+              properties:
+                nickname:
+                  type: string
+                  example : "MrIncredible"
+                  description: Your nickname.
+                password:
+                  type: string
+                  example : "123456"
+                  description: Your personal password.
+      responses:
+        200:
+          description: Logged User.
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/LoggedUser'
+
+  /api/user/logout:
+    post:
+      tags:
+        - UserManagement
+      summary: Logs out a user.
+      description: Logs out a user using it's token that is present in the header.
+      responses:
+        200:
+          description: User logged out.
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/UserLogout'
+  /api/user/profile:
+    get:
+      tags:
+        - UserManagement
+      summary: User private information and personal statistics information.
+      description: Obtains private information about a user using it's token that is present in the header.
+      responses:
+        200:
+          description: User information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+  /api/user/id-info/{userId}:
+    get:
+      tags:
+        - UserManagement
+      summary: User statistics information by userId.
+      description: Obtains public information about a user using it's unique identifier.
+      parameters:
+        - name: userId
+          in: path
+          description: User unique identifier.
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+  /api/user/nickname-info/{nickname}:
+    get:
+      tags:
+        - UserManagement
+      summary: User statistics information by nickname.
+      description: Obtains public information about a user using it's nickname (unique).
+      parameters:
+        - name: nickname
+          in: path
+          description: User nickname identifier.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: User information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+  /api/user/is-login:
+    get:
+      tags:
+        - UserManagement
+      summary: Checks if the user is logged in.
+      description: Checks if the user is logged in using it's token that is present in the header.
+      responses:
+        200:
+          description: User is logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNameAndID'
+  /api/game/start:
+    post:
+      tags:
+        - Game
+      summary: Creates a new game or join a game.
+      description: Creates a new game with the user that is logged in as player with the Black peaces, 
+                    if there is a player waiting then the user joins the game as player Withe the white Peaces.
+      requestBody :
+        description : Data needed to start a new game.
+        required : true
+        content :
+          application/json :
+            schema :
+              required :
+                - grid
+                - openingRule
+                - variant
+              type : object
+              properties :
+                grid :
+                  type : integer
+                  description : Grid size.
+                openingRule :
+                  type : string
+                  description : Opening rules to start a game.
+                variant :
+                  type : string
+                  description : Variant of the game (Caro, Freestyle).
+      responses:
+        201:
+          description: Game created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameCreated'
+  /api/game/play/{lobbyId}:
+    post:
+      tags:
+        - Game
+      summary: Plays a move.
+      description: Plays a move in the game.
+      parameters:
+        - name: lobbyId
+          in: path
+          description: Game unique identifier.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Move data.
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - col
+                - lin
+              type: object
+              properties:
+                col:
+                  type: integer
+                  description: column coordinate.
+                lin:
+                  type: integer
+                  description: row coordinate.
+      responses:
+            200:
+              description: Move played.
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/MovePlayed'
+  /api/game/quit/{lobbyId}:
+    post:
+      tags:
+        - Game
+      summary: Quits a game.
+      description: Quits a game.
+      parameters:
+        - name: lobbyId
+          in: path
+          description: Game unique identifier.
+          required: true
+          schema:
+            type: integer
+      responses:
+            200:
+              description: Game quited.
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/QuitGame'
+  /api/game/active-match:
+    get:
+      tags:
+        - Game
+      summary: Get the gameId of an active match/lobby that the user is in.
+      description: desc
+      responses:
+        200:
+          description: Game Id found
+  /api/game/{lobbyId}:
+    get:
+      tags:
+        - Game
+      summary: Get the state of a game.
+      description: Gets the current state of a game using it's unique identifier.
+      parameters:
+        - name: lobbyId
+          in: path
+          description: Game unique identifier.
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Game state found
+          content :
+            application/json :
+              schema :
+                $ref : '#/components/schemas/GameRunning'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: uuid
+  schemas:
+    SystemInfo:
+      type: object
+      properties:
+        authors:
+          type: array
+          description: Api authors.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Author name
+                example: David.
+              contact:
+                type: string
+                description: Author contact information.
+                example: email@domain.com
+    GlobalStats:
+      type: object
+      properties:
+        totalHours:
+          type: string
+          description: Total hours spent by the players playing the game.
+          example: 364d 23h 59m 59s.
+        totalGames:
+          type: integer
+          description: Total games played through the API.
+          example: 500
+        totalVictories:
+          type: integer
+          description: Total games that ended on victory.
+          example: 430
+    Rankings:
+      type: object
+      properties:
+        bestPlayer:
+          type: array
+          items:
+            type: object
+            properties:
+              playerName:
+                type: string
+                description: Name of the player.
+                example: "MrIncredible"
+              totalPoints:
+                type: integer
+                description: Total points of the player.
+                example: 50000
+        topVictories:
+          type: array
+          items:
+            type: object
+            properties:
+              playerName:
+                type: string
+                description: Name of the player.
+                example: palt2
+              totalVictories:
+                type: integer
+                description: Total victories of the player.
+                example: 200
+        mostGames:
+          type: array
+          items:
+            type: object
+            properties:
+              playerName:
+                type: string
+                description: Name of the player.
+                example: "siamao1223"
+              totalGames:
+                type: integer
+                description: Total games of the player.
+                example: 200
+        mostTime:
+          type: array
+          items:
+            type: object
+            properties:
+              playerName:
+                type: string
+                description: Name of the player.
+                example: "marsul123"
+              totalTimePlayed:
+                type: string
+                description: Total time played by the player .
+                example: "10h 10m 10s"
+        playerDefeats:
+          type: array
+          items:
+            type: object
+            properties:
+              playerName:
+                type: string
+                description: Name of the player.
+                example: "jose123"
+              totalGames:
+                type: integer
+                description: Total defeats of the player.
+                example: 200
+        previousPage:
+          type: string
+          description: Link to the previous page.
+          example: "http://localhost:8080/api/statistics/ranking/1"
+        nextPage:
+            type: string
+            description: Link to the next page.
+            example: "http://localhost:8080/api/statistics/ranking/3"
+    UserCreated:
+      type: object
+      properties:
+        tokenValue:
+          type: string
+          description: Alphanumeric token.
+          example: am9obkBleGFtcGxlLmNvbTphYmMxMjM9==
+        tokenExpiration:
+          type: string
+          description: Token expiration date.
+          example: 2021-05-20T18:00:00.000+00:00
+    LoggedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User unique identifier.
+          example: 2
+        token:
+          type: string
+          description: User session token.
+          example: am9obkBleGFtcGxlLmNvbTphYmMxMjM9==
+    UserNameAndID:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User unique identifier.
+          example: 2
+        nickname:
+          type: string
+          description: User nickname.
+          example: MrIncredible
+    UserLogout:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User logged out.
+    UserInfo:
+      type: object
+      properties:
+        nickname:
+          type: string
+          description: User nickname.
+          example: MrIncredible
+        points:
+          type: integer
+          description: User points.
+          example: 500
+        victories:
+            type: integer
+            description: User victories.
+            example: 200
+        defeats:
+            type: integer
+            description: User defeats.
+            example: 100
+        draws:
+            type: integer
+            description: User draws.
+            example: 100
+        gamesPlayed:
+            type: integer
+            description: User games played.
+            example: 300
+        timePlayed:
+            type: string
+            description: User time played.
+            example: 10h 10m 10s
+
+    GameCreated:
+        type: object
+        properties:
+            gameId:
+                type: integer
+                description: Unique identifier.
+                example: '1'
+    GameRunning:
+        type: object
+        properties:
+          lobbyId:
+            type: integer
+            description: Unique identifier.
+            example: '1'
+          playerPiece:
+            type: string
+            description: Player piece.
+            example: 'BLACK'
+          isPlayerTurn:
+            type: boolean
+            description: Is player turn.
+            example: true
+
+    MovePlayed:
+        type: object
+        properties:
+          message:
+              type: string
+              description: Move played.
+              example: Move played.
+    QuitGame:
+      type: object
+      properties:
+        winner:
+          type: string
+          description: Nick name of the winner.
+          example: MrIncredible
+    UserProfile:
+      type : object
+      properties :
+        id :
+          type : integer
+          description : User unique identifier.
+          example : 2
+        nickname :
+          type : string
+          description : User nickname.
+          example : Joel23
+        email :
+          type : string
+          description : User email.
+          example : joe@gmail.com
+        points :
+          type : integer
+          description : User points.
+          example : 500
+        victories :
+          type : integer
+          description : User victories.
+          example : 200
+        defeats :
+          type : integer
+          description : User defeats.
+          example : 100
+        draws :
+          type : integer
+          description : User draws.
+          example : 100
+        gamesPlayed :
+          type : integer
+          description : User games played.
+          example : 300
+        timePlayed :
+          type : string
+          description : User time played.
+          example : 10h 10m 10s
+
+    BadRequest:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Details about the error made by the client.
+          example: Identifier must be a Number
+
+
+
+
+
+
+  
